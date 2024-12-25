@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Machines</title>
+</head>
+<body>
+    <h1>Machines</h1>
+    {% if machine %}
+        <!-- Detail View -->
+        <h2>Details for {{ machine.name }}</h2>
+        <p>Description: {{ machine.description }}</p>
+        <p>Active: {{ machine.is_active }}</p>
+        <p>Metadata: {{ machine.metadata }}</p>
+        <a href="{% url 'machine_update' machine.pk %}">Edit</a>
+        <a href="{% url 'machine_delete' machine.pk %}">Delete</a>
+    {% else %}
+        <!-- List View -->
+        <ul>
+            {% for machine in machines %}
+                <li>
+                    <a href="{% url 'machine_detail' machine.pk %}">{{ machine.name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+        <a href="{% url 'machine_create' %}">Add New Machine</a>
+    {% endif %}
+</body>
+</html>

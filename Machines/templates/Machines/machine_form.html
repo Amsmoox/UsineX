@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Machine Form</title>
+</head>
+<body>
+    <h1>{% if delete %}Delete Machine{% elif form.instance.pk %}Edit Machine{% else %}Add Machine{% endif %}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {% if delete %}
+            <p>Are you sure you want to deactivate {{ machine.name }}?</p>
+        {% else %}
+            {{ form.as_p }}
+        {% endif %}
+        <button type="submit">{% if delete %}Confirm{% else %}Save{% endif %}</button>
+    </form>
+    <a href="{% url 'machine_list' %}">Back to Machines</a>
+</body>
+</html>
