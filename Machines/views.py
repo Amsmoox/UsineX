@@ -1,8 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, FormView, View
-from .models import Machine, Material
+from django.views.generic import FormView, View
 from django.forms import ModelForm
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from .models import Machine, Material
 
 
 # Flexible Model Form
@@ -12,20 +14,20 @@ class MachineForm(ModelForm):
         fields = ['name', 'description', 'is_active', 'metadata']  # Common fields for create/update
 
 
-# Unified List & Detail View
+@method_decorator(login_required, name='dispatch')
 class MachineListView(View):
     def get(self, request):
         machines = Machine.objects.filter(is_active=True)  # Show active machines only
         return render(request, 'machines/machine_list.html', {'machines': machines})
 
-
+@method_decorator(login_required, name='dispatch')
 class MachineDetailView(View):
     def get(self, request, pk):
         machine = get_object_or_404(Machine, pk=pk)
         return render(request, 'machines/machine_list.html', {'machine': machine})
 
 
-# Flexible Create/Update View
+@method_decorator(login_required, name='dispatch')
 class MachineFormView(FormView):
     template_name = 'machines/machine_form.html'
     form_class = MachineForm
@@ -56,7 +58,7 @@ class MachineFormView(FormView):
     def form_invalid(self, form):
         return self.render_to_response(self.get_context_data(form=form))
 
-
+@method_decorator(login_required, name='dispatch')
 class MachineDeleteView(View):
     def get(self, request, pk):
         machine = get_object_or_404(Machine, pk=pk)
