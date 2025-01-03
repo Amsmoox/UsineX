@@ -4,9 +4,9 @@ from django.views.generic import FormView, View
 from django.forms import ModelForm
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from .models import Machine, Material
-
-
+from .models import Machine
+from django.http import JsonResponse
+from .forms import ProductionForm
 # Flexible Model Form
 class MachineForm(ModelForm):
     class Meta:
@@ -69,3 +69,40 @@ class MachineDeleteView(View):
         machine.is_active = False  # Soft delete
         machine.save()
         return redirect('machine_list')
+
+
+@method_decorator(login_required, name='dispatch')
+class ProductionCreateView(View):
+    def get(self, request):
+        form = ProductionForm()
+        return render(request, 'machines/production_form.html', {'form': form})
+
+    def post(self, request):
+        machine_id = request.POST.get('machine')
+        machine = get_object_or_404(Machine, pk=machine_id) if machine_id else None
+        form = ProductionForm(request.POST, machine=machine)
+
+        if form.is_valid():
+            form.save()
+            return redirect('production_create')  # Redirect to the same page after submission
+        return render(request, 'machines/production_form.html', {'form': form})
+    
+@login_required
+def get_materials(request, machine_id):
+    machine = Machine.objects.filter(pk=machine_id, is_active=True).first()
+    if not machine or not machine.materials:
+        return JsonResponse({'materials': {}})
+    materials = {
+        material: material_data.get('colors', [])
+        for material, material_data in machine.materials.items()
+    }
+    return JsonResponse({'materials': materials})
+
+def get_materials_and_colors(request, machine_id):
+    machine = get_object_or_404(Machine, pk=machine_id, is_active=True)
+    materials = [
+        {'name': material_name, 'colors': material_data.get('color', [])}
+        for material_name, material_data in machine.materials.items()
+    ]
+    return JsonResponse({'materials': materials})
+
