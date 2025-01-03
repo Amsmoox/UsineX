@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Daily Production</title>
+</head>
+<body>
+    <h1>Enter Daily Production</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const machineField = document.querySelector('#id_machine');
+            const materialField = document.querySelector('#id_output_material');
+            const colorField = document.querySelector('#id_material_color');
+    
+            machineField.addEventListener('change', function () {
+                const machineId = this.value;
+    
+                // Fetch materials for the selected machine
+                fetch(`/machines/materials/${machineId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Populate the material dropdown
+                        materialField.innerHTML = '<option value="">Select Material</option>';
+                        data.materials.forEach(material => {
+                            materialField.innerHTML += `<option value="${material.name}">${material.name}</option>`;
+                        });
+                        materialField.disabled = false;
+    
+                        // Reset and disable the color dropdown until a material is selected
+                        colorField.innerHTML = '<option value="">Select Color</option>';
+                        colorField.disabled = true;
+    
+                        // Update color dropdown when a material is selected
+                        materialField.addEventListener('change', function () {
+                            const selectedMaterial = this.value;
+                            const selectedMaterialData = data.materials.find(m => m.name === selectedMaterial);
+                            const colors = selectedMaterialData ? selectedMaterialData.colors : [];
+                            colorField.innerHTML = '<option value="">Select Color</option>';
+                            colors.forEach(color => {
+                                colorField.innerHTML += `<option value="${color}">${color}</option>`;
+                            });
+                            colorField.disabled = colors.length === 0; // Disable if no colors are available
+                        });
+                        
+                    });
+            });
+        });
+    </script>
+    
+</body>
+</html>
